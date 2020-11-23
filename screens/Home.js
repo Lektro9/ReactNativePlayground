@@ -48,8 +48,10 @@ const AllSchemas = [
   { paletteName: 'Rainbow', colors: RAINBOW },
   { paletteName: 'FrontendMasters', colors: FRONTEND_MASTERS },
 ];
-const Home = ({ navigation }) => {
-  const [colors, setColors] = useState([]);
+const Home = ({ navigation, route }) => {
+  const newPalette = route.params ? route.params.newPalette : null;
+  console.log(newPalette);
+  const [colorSamples, setColors] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const getDemColors = useCallback(async () => {
     const result = await fetch(
@@ -65,6 +67,12 @@ const Home = ({ navigation }) => {
     getDemColors();
   }, []);
 
+  useEffect(() => {
+    if (newPalette) {
+      setColors((current) => [newPalette, ...current]);
+    }
+  }, [newPalette]);
+
   const refreshHandler = useCallback(async () => {
     setIsRefreshing(true);
     await getDemColors();
@@ -73,7 +81,7 @@ const Home = ({ navigation }) => {
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <FlatList
-        data={colors}
+        data={colorSamples}
         keyExtractor={(item) => {
           item.paletteName;
         }}
@@ -87,6 +95,15 @@ const Home = ({ navigation }) => {
         )}
         refreshing={isRefreshing}
         onRefresh={refreshHandler}
+        ListHeaderComponent={
+          <TouchableOpacity
+            onPress={() => {
+              navigation.navigate('ColorPaletteModal');
+            }}
+            style={styles.beautifulBox}>
+            <Text>Create A New Color Palette</Text>
+          </TouchableOpacity>
+        }
       />
     </View>
   );
@@ -94,9 +111,9 @@ const Home = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   beautifulBox: {
-    margin: 10,
-    height: '10%',
-    backgroundColor: 'white',
+    margin: 20,
+    height: 40,
+    backgroundColor: 'pink',
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 100,
